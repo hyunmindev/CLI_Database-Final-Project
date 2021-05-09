@@ -5,18 +5,45 @@ cursor = university.cursor(pymysql.cursors.DictCursor)
 
 
 def insert_student(sno, sname, syear, dept):
+    """ Insert student record
+
+    Args:
+        sno(string): Student number
+        sname(string): Student name
+        syear(string): Student grade
+        dept(string): Student department
+
+    Returns:
+        None:
+    """
     sql = "insert into STUDENT values (%s, %s, %s, %s)"
     cursor.execute(sql, (sno, sname, syear, dept))
     university.commit()
 
 
 def delete_student(sno):
+    """Delete student record
+
+    Args:
+        sno(string): Student number
+
+    Returns:
+        None:
+    """
     sql = "delete from STUDENT where %s = STUDENT.sno"
     cursor.execute(sql, sno)
     university.commit()
 
 
 def select_student(sno=""):
+    """Select student record
+
+    Args:
+        sno(string): Student number
+
+    Returns:
+        None:
+    """
     if sno == "":
         sql = "select * from STUDENT"
         cursor.execute(sql)
@@ -30,18 +57,46 @@ def select_student(sno=""):
 
 
 def insert_course(cno, cnmae, credit, dept, prname):
+    """Insert course record
+
+    Args:
+        cno(string): Class number
+        cnmae(string): Class name
+        credit(string): Class credit
+        dept(string): Class department
+        prname(string): Class professor
+
+    Returns:
+        None:
+    """
     sql = "insert into COURSE values (%s, %s, %s, %s, %s)"
     cursor.execute(sql, (cno, cnmae, credit, dept, prname))
     university.commit()
 
 
 def delete_course(cno):
+    """Delete course record
+
+    Args:
+        cno(string): Class number
+
+    Returns:
+        None:
+    """
     sql = "delete from COURSE where %s = COURSE.cno"
     cursor.execute(sql, cno)
     university.commit()
 
 
 def select_course(cno=""):
+    """Select course record
+
+    Args:
+        cno(string): Class number
+
+    Returns:
+        None:
+    """
     if cno == "":
         sql = "select * from COURSE"
         cursor.execute(sql)
@@ -55,18 +110,48 @@ def select_course(cno=""):
 
 
 def insert_enrol(sno, cno, grade, midterm, final):
+    """Insert enrol record
+
+    Args:
+        sno(string): Student number
+        cno(string): Class number
+        grade(string): Student grade
+        midterm(string): Student midterm exam score
+        final(string): Student final exam score
+
+    Returns:
+        None:
+    """
     sql = "insert into ENROL values (%s, %s, %s, %s, %s)"
     cursor.execute(sql, (sno, cno, grade, midterm, final))
     university.commit()
 
 
 def delete_enrol(sno, cno):
+    """Delete enrol record
+
+    Args:
+        sno(string): Student number
+        cno(string): Class number
+
+    Returns:
+        None:
+    """
     sql = "delete from ENROL where %s = ENROL.sno and %s = ENROL.cno"
     cursor.execute(sql, (sno, cno))
     university.commit()
 
 
 def select_enrol(sno="", cno=""):
+    """Select enrol record
+
+    Args:
+        sno(string): Student number
+        cno(string): Class number
+
+    Returns:
+        None:
+    """
     if sno == "" and cno == "":
         sql = "select * from ENROL"
         cursor.execute(sql)
