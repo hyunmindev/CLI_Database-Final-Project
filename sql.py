@@ -1,173 +1,168 @@
 import pymysql
+import time
+from datetime import datetime
 
-university = pymysql.connect(host="localhost", user="root", password="4646", db="university")
-cursor = university.cursor(pymysql.cursors.DictCursor)
-
-
-def insert_student(sno, sname, syear, dept):
-    """ Insert student record
-
-    Args:
-        sno(string): Student number
-        sname(string): Student name
-        syear(string): Student grade
-        dept(string): Student department
-
-    Returns:
-        None:
-    """
-    sql = "insert into STUDENT values (%s, %s, %s, %s)"
-    cursor.execute(sql, (sno, sname, syear, dept))
-    university.commit()
+movie = pymysql.connect(host="localhost", user="root", password="4646", db="movie")
+cursor = movie.cursor(pymysql.cursors.DictCursor)
 
 
-def delete_student(sno):
-    """Delete student record
-
-    Args:
-        sno(string): Student number
-
-    Returns:
-        None:
-    """
-    sql = "delete from STUDENT where %s = STUDENT.sno"
-    cursor.execute(sql, sno)
-    university.commit()
-
-
-def select_student(sno=""):
-    """Select student record
-
-    Args:
-        sno(string): Student number
-
-    Returns:
-        None:
-    """
-    if sno == "":
-        sql = "select * from STUDENT"
-        cursor.execute(sql)
-    else:
-        sql = "select * from STUDENT where %s = STUDENT.sno"
-        cursor.execute(sql, sno)
+def select_by_title(title):
+    sql = '''
+    select *
+    from title_basics
+    where originalTitle = %s || primaryTitle = %s;
+    '''
+    begin_time = time.time()
+    cursor.execute(sql, (title, title))
+    end_time = time.time()
     row = cursor.fetchone()
     while row:
-        print(f"학번: {row['sno']}, 이름: {row['sname']}, 학년: {row['syear']}, 학과: {row['dept']}")
+        print(f"Movie ID: {row['tconst']}, "
+              f"Title: {row['originalTitle']}, "
+              f"Type: {row['titleType']}, "
+              f"Year: {row['startYear']}, ")
         row = cursor.fetchone()
+    return {'count': cursor.rowcount, 'execution': round(end_time - begin_time, 4)}
 
 
-def insert_course(cno, cnmae, credit, dept, prname):
-    """Insert course record
-
-    Args:
-        cno(string): Class number
-        cnmae(string): Class name
-        credit(string): Class credit
-        dept(string): Class department
-        prname(string): Class professor
-
-    Returns:
-        None:
-    """
-    sql = "insert into COURSE values (%s, %s, %s, %s, %s)"
-    cursor.execute(sql, (cno, cnmae, credit, dept, prname))
-    university.commit()
-
-
-def delete_course(cno):
-    """Delete course record
-
-    Args:
-        cno(string): Class number
-
-    Returns:
-        None:
-    """
-    sql = "delete from COURSE where %s = COURSE.cno"
-    cursor.execute(sql, cno)
-    university.commit()
-
-
-def select_course(cno=""):
-    """Select course record
-
-    Args:
-        cno(string): Class number
-
-    Returns:
-        None:
-    """
-    if cno == "":
-        sql = "select * from COURSE"
-        cursor.execute(sql)
-    else:
-        sql = "select * from COURSE where %s = COURSE.cno"
-        cursor.execute(sql, cno)
+def select_by_actor(actor, order_by):
+    sql1 = '''
+    select *
+    from name_basics nb, title_principals tp, title_basics tb, title_ratings tr
+    where nb.nconst = tp.nconst
+    and tb.tconst = tp.tconst
+    and tr.tconst = tb.tconst
+    and tb.titleType = 'movie'
+    and nb.primaryName = %s
+    order by tr.averageRating desc
+    '''
+    sql2 = '''
+        select *
+        from name_basics nb, title_principals tp, title_basics tb, title_ratings tr
+        where nb.nconst = tp.nconst
+        and tb.tconst = tp.tconst
+        and tr.tconst = tb.tconst
+        and tb.titleType = 'movie'
+        and nb.primaryName = %s
+        order by tr.numVotes desc
+        '''
+    begin_time = time.time()
+    if order_by == '1':
+        cursor.execute(sql1, actor)
+    elif order_by == '2':
+        cursor.execute(sql2, actor)
+    end_time = time.time()
     row = cursor.fetchone()
     while row:
-        print(f"과목번호: {row['cno']}, 이름: {row['cname']}, 학점: {row['credit']}, 학과: {row['dept']}, 교수: {row['prname']}")
+        print(f"Movie ID: {row['tconst']}, "
+              f"Actor ID: {row['nconst']}, "
+              f"Title: {row['originalTitle']}, "
+              f"Year: {row['startYear']}, "
+              f"Rating: {row['averageRating']}, "
+              f"Number of votes: {row['numVotes']},")
         row = cursor.fetchone()
+    return {'count': cursor.rowcount, 'execution': round(end_time - begin_time, 4)}
 
 
-def insert_enrol(sno, cno, grade, midterm, final):
-    """Insert enrol record
-
-    Args:
-        sno(string): Student number
-        cno(string): Class number
-        grade(string): Student grade
-        midterm(string): Student midterm exam score
-        final(string): Student final exam score
-
-    Returns:
-        None:
-    """
-    sql = "insert into ENROL values (%s, %s, %s, %s, %s)"
-    cursor.execute(sql, (sno, cno, grade, midterm, final))
-    university.commit()
-
-
-def delete_enrol(sno, cno):
-    """Delete enrol record
-
-    Args:
-        sno(string): Student number
-        cno(string): Class number
-
-    Returns:
-        None:
-    """
-    sql = "delete from ENROL where %s = ENROL.sno and %s = ENROL.cno"
-    cursor.execute(sql, (sno, cno))
-    university.commit()
-
-
-def select_enrol(sno="", cno=""):
-    """Select enrol record
-
-    Args:
-        sno(string): Student number
-        cno(string): Class number
-
-    Returns:
-        None:
-    """
-    if sno == "" and cno == "":
-        sql = "select * from ENROL"
-        cursor.execute(sql)
-    elif sno == "*" and cno == "*":
-        sql = "select * from ENROL"
-        cursor.execute(sql)
-    elif sno == "*":
-        sql = "select * from ENROL where %s = ENROL.cno"
-        cursor.execute(sql, cno)
-    elif cno == "*":
-        sql = "select * from ENROL where %s = ENROL.sno"
-        cursor.execute(sql, sno)
-    else:
-        sql = "select * from ENROL where %s = ENROL.sno and %s = ENROL.cno"
-        cursor.execute(sql, (sno, cno))
+def select_by_director(director):
+    sql = '''
+    select *
+    from title_basics tb, title_crew tc, name_basics nb 
+    where tb.tconst = tc.tconst
+    and tc.directors = nb.nconst
+    and nb.primaryName = %s
+    and tb.titleType = 'movie'
+    order by tb.startYear
+    '''
+    begin_time = time.time()
+    cursor.execute(sql, director)
+    end_time = time.time()
     row = cursor.fetchone()
     while row:
-        print(f"학번: {row['sno']}, 과목번호: {row['cno']}, 성적: {row['grade']}, 중간점수: {row['midterm']}, 기말점수: {row['final']}")
+        print(f"Movie ID: {row['tconst']}, "
+              f"Director ID: {row['nconst']}, "
+              f"Title: {row['originalTitle']}, "
+              f"Year: {row['startYear']}, ")
         row = cursor.fetchone()
+    return {'count': cursor.rowcount, 'execution': round(end_time - begin_time, 4)}
+
+
+def select_by_genre(genre, order_by):
+    sql1 = '''
+    select *
+    from title_basics tb, title_ratings tr force index (title_ratings_averageRating_index)
+    where tb.tconst = tr.tconst 
+    and tb.genres like %s
+    and tb.titleType = 'movie'
+    order by tr.averageRating desc
+    limit 50
+    '''
+    sql2 = '''
+    select *
+    from title_basics tb, title_ratings tr force index (title_ratings_numVotes_index)
+    where tb.tconst = tr.tconst 
+    and tb.genres like %s
+    and tb.titleType = 'movie'
+    order by tr.numVotes desc 
+    limit 50
+    '''
+    begin_time = time.time()
+    if order_by == '1':
+        cursor.execute(sql1, '%' + genre + '%')
+    elif order_by == '2':
+        cursor.execute(sql2, '%' + genre + '%')
+    end_time = time.time()
+    row = cursor.fetchone()
+    while row:
+        print(f"Movie ID: {row['tconst']}, "
+              f"Title: {row['originalTitle']}, "
+              f"Rating: {row['averageRating']}, "
+              f"Number of votes: {row['numVotes']},")
+        row = cursor.fetchone()
+    return {'count': cursor.rowcount, 'execution': round(end_time - begin_time, 4)}
+
+
+def select_oldest_actor():
+    sql = '''
+    select *
+    from name_basics nb
+    where nb.deathYear is null
+    and nb.birthYear is not null
+    order by nb.birthYear
+    limit 1
+    '''
+    begin_time = time.time()
+    cursor.execute(sql)
+    end_time = time.time()
+    row = cursor.fetchone()
+    while row:
+        print(f"Actor ID: {row['nconst']}, "
+              f"Name: {row['primaryName']}, "
+              f"Age: {datetime.today().year - row['birthYear'] + 1}, "
+              f"BirthYear: {row['birthYear']}, ")
+        row = cursor.fetchone()
+    return {'count': cursor.rowcount, 'execution': round(end_time - begin_time, 4)}
+
+
+def select_actor_movie_count_actor(actor):
+    sql = '''
+    select nb.*, count(*) count
+    from name_basics nb,
+    title_principals tp,
+    title_basics tb
+    where nb.nconst = tp.nconst
+    and tb.tconst = tp.tconst
+    and tb.titleType = 'movie'
+    and nb.primaryName = %s
+    group by nb.nconst;
+    '''
+    begin_time = time.time()
+    cursor.execute(sql, actor)
+    end_time = time.time()
+    row = cursor.fetchone()
+    while row:
+        print(f"Actor ID: {row['nconst']}, "
+              f"Name: {row['primaryName']}, "
+              f"Count: {row['count']}")
+        row = cursor.fetchone()
+    return {'count': cursor.rowcount, 'execution': round(end_time - begin_time, 4)}
